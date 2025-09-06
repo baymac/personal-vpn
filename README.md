@@ -27,8 +27,8 @@ First time setup doesn't require any config changes. Feel free to edit `wireguar
       cd quick-vpn   
       scp -i ~/.ssh/id_ecdsa wireguard* root@YOUR_SERVER_IP:/root/
       ssh root@YOUR_SERVER_IP
-      chmod +x wireguard_setup
-      ./wireguard_setup
+      chmod +x wireguard_init
+      ./wireguard_init
       ```
 
    OR
@@ -38,7 +38,7 @@ First time setup doesn't require any config changes. Feel free to edit `wireguar
       git clone https://github.com/baymac/quick-vpn.git
       cd quick-vpn
       # Edit the configuration file with your settings
-      sudo ./wireguard_setup
+      sudo ./wireguard_init
       ```
    
    Note: we are defaulting to root user, you can use a different user.
