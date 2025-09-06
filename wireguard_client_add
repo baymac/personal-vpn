@@ -86,19 +86,47 @@ SERVER_VPN_IP=$(echo "$VPN_SUBNET" | sed 's/0\/24/1/')
 CLIENTS_DIR="/etc/wireguard/clients"
 mkdir -p "$CLIENTS_DIR"
 
-# Get existing client IPs
-EXISTING_IPS=$(find "$CLIENTS_DIR" -name "*.conf" -exec grep "Address" {} \; | cut -d' ' -f3 | cut -d'/' -f1 | sort -V)
-LAST_OCTET=1
+# Get existing IPs from both client configs and server config
+EXISTING_IPS_FROM_CLIENTS=""
+if [[ -d "$CLIENTS_DIR" ]]; then
+    EXISTING_IPS_FROM_CLIENTS=$(find "$CLIENTS_DIR" -name "*.conf" -exec grep "Address" {} \; 2>/dev/null | cut -d' ' -f3 | cut -d'/' -f1)
+fi
 
-for ip in $EXISTING_IPS; do
-    OCTET=$(echo "$ip" | cut -d'.' -f4)
-    if [[ $OCTET -gt $LAST_OCTET ]]; then
-        LAST_OCTET=$OCTET
+# Get IPs from server config (AllowedIPs)
+EXISTING_IPS_FROM_SERVER=""
+if [[ -f "$SERVER_CONFIG" ]]; then
+    EXISTING_IPS_FROM_SERVER=$(grep "AllowedIPs" "$SERVER_CONFIG" | cut -d' ' -f3 | cut -d'/' -f1)
+fi
+
+# Get server IP (should be .1)
+SERVER_VPN_IP=$(echo "$VPN_SUBNET" | sed 's/0\/24/1/')
+
+# Combine all existing IPs
+ALL_EXISTING_IPS=$(echo -e "$EXISTING_IPS_FROM_CLIENTS\n$EXISTING_IPS_FROM_SERVER\n$SERVER_VPN_IP" | grep -v "^$" | sort -V -u)
+
+log "Existing IPs in use: $(echo $ALL_EXISTING_IPS | tr '\n' ' ')"
+
+# Find next available IP starting from .2 (since .1 is server)
+NEXT_OCTET=2
+BASE_IP=$(echo "$VPN_SUBNET" | sed 's/\.0\/24//')
+
+while true; do
+    CANDIDATE_IP="${BASE_IP}.${NEXT_OCTET}"
+    
+    # Check if this IP is already in use
+    if ! echo "$ALL_EXISTING_IPS" | grep -q "^${CANDIDATE_IP}$"; then
+        CLIENT_VPN_IP="$CANDIDATE_IP"
+        break
+    fi
+    
+    NEXT_OCTET=$((NEXT_OCTET + 1))
+    
+    # Prevent infinite loop - max 253 clients (.2 to .254)
+    if [[ $NEXT_OCTET -gt 254 ]]; then
+        error "No available IP addresses in subnet $VPN_SUBNET"
+        exit 1
     fi
 done
-
-NEXT_OCTET=$((LAST_OCTET + 1))
-CLIENT_VPN_IP=$(echo "$VPN_SUBNET" | sed "s/0\/24/${NEXT_OCTET}/")
 
 log "Adding new WireGuard client: $CLIENT_NAME"
 log "Client VPN IP: $CLIENT_VPN_IP"

@@ -39,6 +39,33 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# Check for existing WireGuard configuration and run teardown if needed
+if [[ -f "/etc/wireguard/wg0.conf" ]] || systemctl is-active --quiet wg-quick@wg0 2>/dev/null; then
+    warning "Existing WireGuard configuration detected."
+    echo "This will remove the existing setup and create a new one."
+    read -p "Do you want to continue? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        log "Running teardown to clean existing configuration..."
+        if [[ -f "./wireguard_teardown" ]]; then
+            chmod +x ./wireguard_teardown
+            ./wireguard_teardown
+            if [[ $? -eq 0 ]]; then
+                success "Existing configuration cleaned successfully"
+            else
+                error "Failed to clean existing configuration"
+                exit 1
+            fi
+        else
+            error "wireguard_teardown script not found. Please run teardown manually first."
+            exit 1
+        fi
+    else
+        log "Setup cancelled by user"
+        exit 0
+    fi
+fi
+
 # Load configuration
 if [[ ! -f "$CONFIG_PATH" ]]; then
     error "Configuration file not found: $CONFIG_PATH"
