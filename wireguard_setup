@@ -5,7 +5,7 @@
 
 CONFIG_FILE="${1:-wireguard_setup.conf}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_PATH="$SCRIPT_DIR/$CONFIG_FILE"
+CONFIG_PATH="./wireguard_init.conf"
 
 # Color codes
 GREEN='\033[0;32m'

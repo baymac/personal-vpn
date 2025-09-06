@@ -4,9 +4,18 @@
 
 One-command WireGuard VPN setup with instant QR code for mobile and config for desktop
 
+## Prerequisites
+
+- A VPS or server with a public IP address
+- Ubuntu 20.04+ or Debian 11+ (this guide uses Ubuntu)
+- Root or sudo access
+- Basic command line knowledge
+
 ## Quick Setup
 
-Note: we are defaulting to root user, you can use a different user.
+## Configuration
+
+First time setup doesn't require any config changes. Feel free to edit `wireguard_init.conf` before running.
 
 1. Start Wireguard VPN on the VPS
 
@@ -28,51 +37,55 @@ Note: we are defaulting to root user, you can use a different user.
       ```bash
       git clone https://github.com/baymac/quick-vpn.git
       cd quick-vpn
-      chmod +x wireguard_setup
-      ./wireguard_setup
+      cp wireguard_init.conf.example wireguard_init.conf
+      # Edit the configuration file with your settings
+      sudo ./wireguard_setup
       ```
+   
+   Note: we are defaulting to root user, you can use a different user.
 
 2. **Scan QR code** with WireGuard app on your phone
 
-## What it does
+   ### Mobile Setup
 
-- ✅ Installs WireGuard server
-- ✅ Generates keys automatically  
-- ✅ Configures firewall
-- ✅ Displays QR code in terminal
-- ✅ Saves client config files
+   1. Install WireGuard app
+   2. Tap "+" → "Scan from QR code"
+   3. Scan the displayed QR code
+   4. Enable tunnel
 
-## Configuration
+   Done! All traffic routes through your VPS.
 
-First time setup doesn't require any config changes. Feel free to do so.
+## Adding More Clients
 
-Edit `wireguard_setup.conf` before running:
+To add additional clients to your existing WireGuard setup:
 
 ```bash
-CLIENT_NAME="phone" # unique name for new client
-CLIENT_VPN_IP="10.0.0.2" # increment by 1 per new client
+# Edit client configuration
+cp wireguard_client_add.conf.example wireguard_client_add.conf
+# Edit the configuration file with client settings
+chmod +x wireguard_client_add
+./wireguard_client_add
 ```
 
-## Mobile Setup
+Each client gets:
+- Unique VPN IP address (auto-assigned)
+- Individual QR code and config file
+- Separate key pair for security
 
-1. Install WireGuard app
-2. Tap "+" → "Scan from QR code"
-3. Scan the displayed QR code
-4. Enable tunnel
+Do not connect same client to multiple devices, it will break the connection.
 
-Done! All traffic routes through your VPS.
+## List and Get Existing Clients
 
-## Management
+### Commands
 
 ```bash
-# Check status
-sudo wg show
+chmod +x wireguard_client_list
 
-# Restart service  
-sudo systemctl restart wg-quick@wg0
+# List all active clients (reads from server config first)
+./wireguard_client_list list
 
-# View logs
-sudo journalctl -u wg-quick@wg0
+# Get QR code, config, and regenerate PNG for a specific client
+./wireguard_client_list get <client_name> # Replace <client_name> with the name of the client
 ```
 
 ## Teardown
@@ -89,3 +102,18 @@ This will remove:
 - All client keys and certificates  
 - Firewall rules
 - Network interface
+
+
+## Management
+
+```bash
+# Check status
+sudo wg show
+
+# Restart service  
+sudo systemctl restart wg-quick@wg0
+
+# View logs
+sudo journalctl -u wg-quick@wg0
+```
+
