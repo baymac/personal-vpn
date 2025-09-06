@@ -37,7 +37,6 @@ First time setup doesn't require any config changes. Feel free to edit `wireguar
       ```bash
       git clone https://github.com/baymac/quick-vpn.git
       cd quick-vpn
-      cp wireguard_init.conf.example wireguard_init.conf
       # Edit the configuration file with your settings
       sudo ./wireguard_setup
       ```
@@ -59,13 +58,14 @@ First time setup doesn't require any config changes. Feel free to edit `wireguar
 
 To add additional clients to your existing WireGuard setup:
 
-```bash
-# Edit client configuration
-cp wireguard_client_add.conf.example wireguard_client_add.conf
-# Edit the configuration file with client settings
-chmod +x wireguard_client_add
-./wireguard_client_add
-```
+1. Edit `wireguard_client_add.conf` with client settings
+
+2. Add client:
+   ```bash
+   # Edit the configuration file with client settings
+   chmod +x wireguard_client_add
+   ./wireguard_client_add
+   ```
 
 Each client gets:
 - Unique VPN IP address (auto-assigned)
