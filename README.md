@@ -16,7 +16,7 @@ Note: we are defaulting to root user, you can use a different user.
       ```bash
       git clone https://github.com/baymac/wireguard-qr.git
       cd wireguard-qr
-      scp -i ~/.ssh/id_ecdsa wireguard_setup* root@YOUR_SERVER_IP:/root/
+      scp -i ~/.ssh/id_ecdsa wireguard* root@YOUR_SERVER_IP:/root/
       ssh root@YOUR_SERVER_IP
       chmod +x wireguard_setup
       ./wireguard_setup
