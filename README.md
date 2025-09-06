@@ -1,4 +1,4 @@
-# Personal VPN with Wireguard on your VPS
+# Quick VPN with Wireguard on your VPS
 
 ![AI Generated](https://img.shields.io/badge/🤖_AI-Generated-orange)
 
@@ -14,8 +14,8 @@ Note: we are defaulting to root user, you can use a different user.
 
    ### i. Start from your Laptop (Modify based on your setup):
       ```bash
-      git clone https://github.com/baymac/personal-vpn.git
-      cd personal-vpn   
+      git clone https://github.com/baymac/quick-vpn.git
+      cd quick-vpn   
       scp -i ~/.ssh/id_ecdsa wireguard* root@YOUR_SERVER_IP:/root/
       ssh root@YOUR_SERVER_IP
       chmod +x wireguard_setup
@@ -26,8 +26,8 @@ Note: we are defaulting to root user, you can use a different user.
 
    ### ii. Start from your VPS:
       ```bash
-      git clone https://github.com/baymac/personal-vpn.git
-      cd personal-vpn
+      git clone https://github.com/baymac/quick-vpn.git
+      cd quick-vpn
       chmod +x wireguard_setup
       ./wireguard_setup
       ```
