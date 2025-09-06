@@ -52,8 +52,8 @@ echo "│                                                  │"
 echo "╰──────────────────────────────────────────────────╯"
 echo ""
 
-read -p "Are you sure you want to proceed? (yes/no): " confirm
-if [[ $confirm != "yes" ]]; then
+read -p "Are you sure you want to proceed? (y/n): " confirm
+if [[ $confirm != "y" ]]; then
     log "Teardown cancelled by user"
     exit 0
 fi
@@ -115,8 +115,9 @@ done
 success "iptables rules cleaned up"
 
 # Step 5: Disable IP forwarding (optional - ask user)
-read -p "Do you want to disable IP forwarding? This may affect other services (yes/no): " disable_forwarding
-if [[ $disable_forwarding == "yes" ]]; then
+echo "Do you want to disable IP forwarding? This may affect other services."
+read -p "Enter your choice (y/n): " disable_forwarding
+if [[ $disable_forwarding == "y" ]]; then
     log "Disabling IP forwarding..."
     
     # Remove from sysctl.conf
@@ -133,8 +134,9 @@ else
 fi
 
 # Step 6: Remove WireGuard packages (optional)
-read -p "Do you want to remove WireGuard packages? (yes/no): " remove_packages
-if [[ $remove_packages == "yes" ]]; then
+echo "Do you want to remove WireGuard packages?"
+read -p "Enter your choice (y/n): " remove_packages
+if [[ $remove_packages == "y" ]]; then
     log "Removing WireGuard packages..."
     
     if command -v apt >/dev/null 2>&1; then

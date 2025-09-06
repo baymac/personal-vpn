@@ -92,7 +92,7 @@ log "VPN Subnet: $VPN_SUBNET"
 # Step 1: System Update and Package Installation
 log "Updating system and installing WireGuard..."
 apt update
-apt install -y wireguard qrencode ufw
+apt install -y wireguard qrencode ufw boxes
 
 # Step 2: Enable IP forwarding
 log "Enabling IP forwarding..."
@@ -187,43 +187,41 @@ else
 fi
 
 # Step 9: Generate and display QR code
-log "Generating QR code for mobile setup..."
+log "Generating QR code and config for client setup..."
 echo ""
-echo "╭──────────────────────────────────────────────────╮"
-echo "│                                                  │"
-echo "│          SCAN THIS QR CODE WITH YOUR PHONE      │"
-echo "│                                                  │"
-echo "╰──────────────────────────────────────────────────╯"
+echo "SCAN THIS QR CODE WITH YOUR PHONE" | boxes -d simple
 echo ""
 
 qrencode -t ansiutf8 < "/etc/wireguard/clients/${CLIENT_NAME}.conf"
 
+echo "OR COPY THIS CONFIG FOR DESKTOP/MOBILE" | boxes -d simple
 echo ""
-echo "╭──────────────────────────────────────────────────╮"
-echo "│                                                  │"
-echo "│         WIREGUARD VPN SETUP COMPLETED     │"
-echo "│                                                  │"
-echo "│   ✅ Server: Running on port $LISTEN_PORT              │"
-echo "│   ✅ Client Config: Generated                   │"
-echo "│   ✅ QR Code: Ready for scanning               │"
-echo "│   ✅ Firewall: Configured                       │"
-echo "│                                                  │"
-echo "│   📱 Mobile Setup:                              │"
-echo "│      1. Install WireGuard app                   │"
-echo "│      2. Tap '+' or 'Add tunnel'                 │"
-echo "│      3. Scan QR code above                      │"
-echo "│      4. Enable the tunnel                       │"
-echo "│                                                  │"
-echo "│   📁 Config Files:                              │"
-echo "│      Server: /etc/wireguard/wg0.conf           │"
-echo "│      Client: /etc/wireguard/clients/${CLIENT_NAME}.conf    │"
-echo "│                                                  │"
-echo "│   🔧 Management Commands:                       │"
-echo "│      Status: sudo wg show                       │"
-echo "│      Restart: sudo systemctl restart wg-quick@wg0 │"
-echo "│      Logs: sudo journalctl -u wg-quick@wg0     │"
-echo "│                                                  │"
-echo "╰──────────────────────────────────────────────────╯"
+echo -e "${YELLOW}Copy the config below and paste into WireGuard client:${NC}"
+echo ""
+cat "/etc/wireguard/clients/${CLIENT_NAME}.conf"
+
+echo ""
+echo "WIREGUARD VPN SETUP COMPLETED
+
+✅ Server: Running on port $LISTEN_PORT
+✅ Client Config: Generated
+✅ QR Code: Ready for scanning
+✅ Firewall: Configured
+
+📱 Mobile Setup:
+   1. Install WireGuard app
+   2. Tap '+' or 'Add tunnel'
+   3. Scan QR code above
+   4. Enable the tunnel
+
+📁 Config Files:
+   Server: /etc/wireguard/wg0.conf
+   Client: /etc/wireguard/clients/${CLIENT_NAME}.conf
+
+🔧 Management Commands:
+   Status: sudo wg show
+   Restart: sudo systemctl restart wg-quick@wg0
+   Logs: sudo journalctl -u wg-quick@wg0" | boxes -d stone
 echo ""
 
 # Step 10: Display connection info

@@ -2,7 +2,7 @@
 
 ![AI Generated](https://img.shields.io/badge/🤖_AI-Generated-orange)
 
-One-command WireGuard VPN setup with instant QR code for mobile devices.
+One-command WireGuard VPN setup with instant QR code for mobile and config for desktop
 
 ## Quick Setup
 
@@ -12,7 +12,7 @@ Note: we are defaulting to root user, you can use a different user.
 
    There are two ways to start the VPN:
 
-   ### i. Start from your Laptop:
+   ### i. Start from your Laptop (Modify based on your setup):
       ```bash
       git clone https://github.com/baymac/wireguard-qr.git
       cd wireguard-qr
