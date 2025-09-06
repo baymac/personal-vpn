@@ -79,13 +79,13 @@ Do not connect same client to multiple devices, it will break the connection.
 ### Commands
 
 ```bash
-chmod +x wireguard_client_list
+chmod +x wireguard_client
 
 # List all active clients (reads from server config first)
-./wireguard_client_list list
+./wireguard_client list
 
 # Get QR code, config, and regenerate PNG for a specific client
-./wireguard_client_list get <client_name> # Replace <client_name> with the name of the client
+./wireguard_client get <client_name> # Replace <client_name> with the name of the client
 ```
 
 ## Teardown
