@@ -1,5 +1,7 @@
 # WireGuard VPN with QR Code Setup
 
+![AI Generated](https://img.shields.io/badge/🤖_AI-Generated-orange)
+
 One-command WireGuard VPN setup with instant QR code for mobile devices.
 
 ## Quick Setup
