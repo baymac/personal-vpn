@@ -57,6 +57,7 @@ if [[ ! -f "$CONFIG_PATH" ]]; then
     cat > "$CONFIG_PATH" << 'EOF'
 # WireGuard Client Add Configuration
 CLIENT_NAME="client2"
+CLIENT_IP="10.0.0.3"
 VPN_SUBNET="10.0.0.0/24"
 DNS_SERVERS="1.1.1.1, 8.8.8.8"
 EOF
@@ -67,6 +68,17 @@ fi
 
 # Source the configuration
 source "$CONFIG_PATH"
+
+# Validate required configuration
+if [[ -z "$CLIENT_NAME" ]]; then
+    error "CLIENT_NAME is not set in configuration file"
+    exit 1
+fi
+
+if [[ -z "$CLIENT_IP" ]]; then
+    error "CLIENT_IP is not set in configuration file"
+    exit 1
+fi
 
 # Get server configuration from existing setup
 SERVER_CONFIG="/etc/wireguard/wg0.conf"
@@ -82,11 +94,23 @@ LISTEN_PORT=$(grep "ListenPort" "$SERVER_CONFIG" | cut -d' ' -f3)
 SERVER_IP=$(curl -s -4 ifconfig.me)
 SERVER_VPN_IP=$(echo "$VPN_SUBNET" | sed 's/0\/24/1/')
 
-# Find next available IP
+# Set up clients directory
 CLIENTS_DIR="/etc/wireguard/clients"
 mkdir -p "$CLIENTS_DIR"
 
-# Get existing IPs from both client configs and server config
+# Use the CLIENT_IP from config
+CLIENT_VPN_IP="$CLIENT_IP"
+
+log "Adding new WireGuard client: $CLIENT_NAME"
+log "Client VPN IP: $CLIENT_VPN_IP"
+
+# Check if client name already exists
+if [[ -f "$CLIENTS_DIR/${CLIENT_NAME}.conf" ]]; then
+    error "Client '$CLIENT_NAME' already exists. Choose a different name."
+    exit 1
+fi
+
+# Check for IP conflicts with existing clients
 EXISTING_IPS_FROM_CLIENTS=""
 if [[ -d "$CLIENTS_DIR" ]]; then
     EXISTING_IPS_FROM_CLIENTS=$(find "$CLIENTS_DIR" -name "*.conf" -exec grep "Address" {} \; 2>/dev/null | cut -d' ' -f3 | cut -d'/' -f1)
@@ -98,42 +122,15 @@ if [[ -f "$SERVER_CONFIG" ]]; then
     EXISTING_IPS_FROM_SERVER=$(grep "AllowedIPs" "$SERVER_CONFIG" | cut -d' ' -f3 | cut -d'/' -f1)
 fi
 
-# Get server IP (should be .1)
-SERVER_VPN_IP=$(echo "$VPN_SUBNET" | sed 's/0\/24/1/')
-
 # Combine all existing IPs
 ALL_EXISTING_IPS=$(echo -e "$EXISTING_IPS_FROM_CLIENTS\n$EXISTING_IPS_FROM_SERVER\n$SERVER_VPN_IP" | grep -v "^$" | sort -V -u)
 
 log "Existing IPs in use: $(echo $ALL_EXISTING_IPS | tr '\n' ' ')"
 
-# Find next available IP starting from .2 (since .1 is server)
-NEXT_OCTET=2
-BASE_IP=$(echo "$VPN_SUBNET" | sed 's/\.0\/24//')
-
-while true; do
-    CANDIDATE_IP="${BASE_IP}.${NEXT_OCTET}"
-    
-    # Check if this IP is already in use
-    if ! echo "$ALL_EXISTING_IPS" | grep -q "^${CANDIDATE_IP}$"; then
-        CLIENT_VPN_IP="$CANDIDATE_IP"
-        break
-    fi
-    
-    NEXT_OCTET=$((NEXT_OCTET + 1))
-    
-    # Prevent infinite loop - max 253 clients (.2 to .254)
-    if [[ $NEXT_OCTET -gt 254 ]]; then
-        error "No available IP addresses in subnet $VPN_SUBNET"
-        exit 1
-    fi
-done
-
-log "Adding new WireGuard client: $CLIENT_NAME"
-log "Client VPN IP: $CLIENT_VPN_IP"
-
-# Check if client already exists
-if [[ -f "$CLIENTS_DIR/${CLIENT_NAME}.conf" ]]; then
-    error "Client '$CLIENT_NAME' already exists. Choose a different name."
+# Check if the requested IP is already in use
+if echo "$ALL_EXISTING_IPS" | grep -q "^${CLIENT_VPN_IP}$"; then
+    error "IP address '$CLIENT_VPN_IP' is already in use by another client or the server."
+    error "Please choose a different IP address in the configuration file."
     exit 1
 fi
 
